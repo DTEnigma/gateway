@@ -102,27 +102,29 @@ export async function openPosition(
     throw httpErrors.badRequest('Lower price must be less than upper price');
   }
 
-  // Amounts (base/quote -> token0/token1 orientation)
-  let token0Amount = CurrencyAmount.fromRawAmount(token0, 0);
-  let token1Amount = CurrencyAmount.fromRawAmount(token1, 0);
+  // Amounts (base/quote -> token0/token1 orientation) — sdk Tokens for math
+  const sdkToken0 = aerodrome.getSdkToken(token0);
+  const sdkToken1 = aerodrome.getSdkToken(token1);
+  let token0Amount = CurrencyAmount.fromRawAmount(sdkToken0, 0);
+  let token1Amount = CurrencyAmount.fromRawAmount(sdkToken1, 0);
   if (baseTokenAmount !== undefined) {
-    const tok = isBaseToken0 ? token0 : token1;
+    const tok = isBaseToken0 ? sdkToken0 : sdkToken1;
     const raw = JSBI.BigInt(Math.floor(baseTokenAmount * Math.pow(10, tok.decimals)).toString());
-    if (isBaseToken0) token0Amount = CurrencyAmount.fromRawAmount(token0, raw);
-    else token1Amount = CurrencyAmount.fromRawAmount(token1, raw);
+    if (isBaseToken0) token0Amount = CurrencyAmount.fromRawAmount(sdkToken0, raw);
+    else token1Amount = CurrencyAmount.fromRawAmount(sdkToken1, raw);
   }
   if (quoteTokenAmount !== undefined) {
-    const tok = isBaseToken0 ? token1 : token0;
+    const tok = isBaseToken0 ? sdkToken1 : sdkToken0;
     const raw = JSBI.BigInt(Math.floor(quoteTokenAmount * Math.pow(10, tok.decimals)).toString());
-    if (isBaseToken0) token1Amount = CurrencyAmount.fromRawAmount(token1, raw);
-    else token0Amount = CurrencyAmount.fromRawAmount(token0, raw);
+    if (isBaseToken0) token1Amount = CurrencyAmount.fromRawAmount(sdkToken1, raw);
+    else token0Amount = CurrencyAmount.fromRawAmount(sdkToken0, raw);
   }
 
   // Position math via v3-sdk (chain-agnostic arithmetic)
   const position = buildPositionFromAmounts(
     {
-      token0,
-      token1,
+      token0: sdkToken0,
+      token1: sdkToken1,
       sqrtPriceX96: JSBI.BigInt(slot0.sqrtPriceX96.toString()),
       liquidity: JSBI.BigInt(poolLiquidity.toString()),
       tickCurrent: Number(slot0.tick),
@@ -209,8 +211,8 @@ export async function openPosition(
       fee: outcome.fee,
       positionAddress: positionId,
       positionRent: 0, // no rent on EVM
-      baseTokenAmountAdded: isBaseToken0 ? actualToken0 : actualToken1,
-      quoteTokenAmountAdded: isBaseToken0 ? actualToken1 : actualToken0,
+      baseTokenAmountAdded: Number(isBaseToken0 ? actualToken0 : actualToken1),
+      quoteTokenAmountAdded: Number(isBaseToken0 ? actualToken1 : actualToken0),
     },
   };
 }

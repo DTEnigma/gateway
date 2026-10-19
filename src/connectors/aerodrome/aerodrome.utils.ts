@@ -19,6 +19,7 @@ import {
   TickMath,
   SqrtPriceMath,
   LiquidityMath,
+  maxLiquidityForAmounts,
   Position as UniV3Position,
   Pool as UniV3Pool,
   nearestUsableTick,
@@ -85,21 +86,7 @@ export function getAmount1Delta(
   return SqrtPriceMath.getAmount1Delta(sqrtA, sqrtB, liquidity, roundUp);
 }
 
-export function maxLiquidityForAmounts(
-  sqrtRatioCurrentX96: JSBI,
-  sqrtA: JSBI,
-  sqrtB: JSBI,
-  amount0: JSBI,
-  amount1: JSBI,
-): JSBI {
-  return SqrtPriceMath.maxLiquidityForAmounts(
-    sqrtRatioCurrentX96,
-    sqrtA,
-    sqrtB,
-    amount0,
-    amount1,
-  );
-}
+export { maxLiquidityForAmounts };
 
 export function addLiquidityDelta(current: JSBI, delta: JSBI): JSBI {
   return LiquidityMath.addDelta(current, delta);

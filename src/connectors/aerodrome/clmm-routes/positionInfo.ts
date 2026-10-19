@@ -68,8 +68,8 @@ export async function getPositionInfo(
   }
 
   const sdkPool = toV3SdkPool({
-    token0,
-    token1,
+    token0: aerodrome.getSdkToken(token0),
+    token1: aerodrome.getSdkToken(token1),
     sqrtPriceX96: JSBI.BigInt(poolState.sqrtPriceX96),
     liquidity: JSBI.BigInt(poolState.liquidity),
     tickCurrent: poolState.tick,
@@ -102,10 +102,10 @@ export async function getPositionInfo(
     poolAddress: poolState.address,
     baseTokenAddress: (isBaseToken0 ? token0 : token1).address,
     quoteTokenAddress: (isBaseToken0 ? token1 : token0).address,
-    baseTokenAmount: isBaseToken0 ? token0Amount : token1Amount,
-    quoteTokenAmount: isBaseToken0 ? token1Amount : token0Amount,
-    baseFeeAmount: isBaseToken0 ? feeAmount0 : feeAmount1,
-    quoteFeeAmount: isBaseToken0 ? feeAmount1 : feeAmount0,
+    baseTokenAmount: Number(isBaseToken0 ? token0Amount : token1Amount),
+    quoteTokenAmount: Number(isBaseToken0 ? token1Amount : token0Amount),
+    baseFeeAmount: Number(isBaseToken0 ? feeAmount0 : feeAmount1),
+    quoteFeeAmount: Number(isBaseToken0 ? feeAmount1 : feeAmount0),
     lowerBinId: Number(tickLower),
     upperBinId: Number(tickUpper),
     lowerPrice: invert ? 1 / upperPriceRaw : lowerPriceRaw,

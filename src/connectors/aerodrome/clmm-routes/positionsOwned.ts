@@ -76,7 +76,7 @@ export async function getPositionsOwned(
         // Reuse the single-position hydration logic (which finds the owning
         // generation itself).
         const info = await getPositionInfoForGeneration(
-          fastify, network, tokenId.toString(), gen.name,
+          fastify, network, tokenId.toString(),
         );
         results.push(info);
       } catch (err) {
@@ -96,7 +96,6 @@ export async function getPositionInfoForGeneration(
   fastify: FastifyInstance,
   network: string,
   positionAddress: string,
-  generation: string,
 ): Promise<PositionInfo> {
   // Lazy import to avoid a circular import between the two route modules.
   const { getPositionInfo } = await import('./positionInfo');

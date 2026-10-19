@@ -76,8 +76,8 @@ export async function getPoolInfo(
     binStep: tickSpacing,
     feePct: 0, // Slipstream fees are dynamic (fee modules); not a pool immutable
     price: isBaseToken0 ? price : 1 / price,
-    baseTokenAmount: isBaseToken0 ? token0Amount : token1Amount,
-    quoteTokenAmount: isBaseToken0 ? token1Amount : token0Amount,
+    baseTokenAmount: Number(isBaseToken0 ? token0Amount : token1Amount),
+    quoteTokenAmount: Number(isBaseToken0 ? token1Amount : token0Amount),
     activeBinId: tick,
   };
 

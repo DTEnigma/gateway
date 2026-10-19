@@ -46,8 +46,8 @@ export async function addLiquidity(
   }
 
   const sdkPool = toV3SdkPool({
-    token0,
-    token1,
+    token0: aerodrome.getSdkToken(token0),
+    token1: aerodrome.getSdkToken(token1),
     sqrtPriceX96: JSBI.BigInt(poolState.sqrtPriceX96),
     liquidity: JSBI.BigInt(poolState.liquidity),
     tickCurrent: poolState.tick,
@@ -69,10 +69,12 @@ export async function addLiquidity(
   const baseTok = isBaseToken0 ? token0 : token1;
   const quoteTok = isBaseToken0 ? token1 : token0;
   const amount0 = CurrencyAmount.fromRawAmount(
-    token0, JSBI.BigInt(Math.floor((isBaseToken0 ? baseTokenAmount : quoteTokenAmount) * Math.pow(10, token0.decimals))),
+    aerodrome.getSdkToken(token0),
+    JSBI.BigInt(Math.floor((isBaseToken0 ? baseTokenAmount : quoteTokenAmount) * Math.pow(10, token0.decimals))),
   );
   const amount1 = CurrencyAmount.fromRawAmount(
-    token1, JSBI.BigInt(Math.floor((isBaseToken0 ? quoteTokenAmount : baseTokenAmount) * Math.pow(10, token1.decimals))),
+    aerodrome.getSdkToken(token1),
+    JSBI.BigInt(Math.floor((isBaseToken0 ? quoteTokenAmount : baseTokenAmount) * Math.pow(10, token1.decimals))),
   );
 
   // New liquidity delta from amounts (v3-sdk math over the current pool state)
@@ -121,13 +123,13 @@ export async function addLiquidity(
     status: TransactionStatus.CONFIRMED,
     data: {
       fee: outcome.fee,
-      baseTokenAmountAdded: formatTokenAmount(nextPosition.amount0.quotient.toString(), baseTok.decimals),
-      quoteTokenAmountAdded: formatTokenAmount(nextPosition.amount1.quotient.toString(), quoteTok.decimals),
+      baseTokenAmountAdded: Number(formatTokenAmount(nextPosition.amount0.quotient.toString(), baseTok.decimals)),
+      quoteTokenAmountAdded: Number(formatTokenAmount(nextPosition.amount1.quotient.toString(), quoteTok.decimals)),
     },
   };
 }
 
-async function requireWallet(ethereum: Ethereum): Promise<string> {
+async function requireWallet(_ethereum: Ethereum): Promise<string> {
   const addr = await Ethereum.getFirstWalletAddress();
   if (!addr) throw httpErrors.badRequest('No default wallet found');
   return addr;

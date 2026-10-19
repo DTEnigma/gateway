@@ -59,13 +59,13 @@ export async function collectFees(
     status: TransactionStatus.CONFIRMED,
     data: {
       fee: outcome.fee,
-      baseTokenAmountCollected: formatTokenAmount(details.tokensOwed0.toString(), token0.decimals),
-      quoteTokenAmountCollected: formatTokenAmount(details.tokensOwed1.toString(), token1.decimals),
+      baseFeeAmountCollected: Number(formatTokenAmount(details.tokensOwed0.toString(), token0.decimals)),
+      quoteFeeAmountCollected: Number(formatTokenAmount(details.tokensOwed1.toString(), token1.decimals)),
     },
   };
 }
 
-async function requireWallet(ethereum: Ethereum): Promise<string> {
+async function requireWallet(_ethereum: Ethereum): Promise<string> {
   const addr = await Ethereum.getFirstWalletAddress();
   if (!addr) throw httpErrors.badRequest('No default wallet found');
   return addr;

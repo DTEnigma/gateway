@@ -5,9 +5,10 @@
  * Scope: CLMM (Slipstream) only; standard AMM pools are doc 03 phase 2.
  * Handles THREE contract generations (see aerodrome.constants.ts).
  */
+import { Token } from '@uniswap/sdk-core';
 import { Contract } from 'ethers';
 
-import { Ethereum } from '../../chains/ethereum/ethereum';
+import { Ethereum, TokenInfo } from '../../chains/ethereum/ethereum';
 import { logger } from '../../services/logger';
 
 import {
@@ -105,6 +106,11 @@ export class Aerodrome {
   /** Token metadata via the shared Ethereum chain layer. */
   public async getToken(address: string) {
     return this.ethereum.getToken(address);
+  }
+
+  /** Convert gateway TokenInfo -> v3-sdk Token (same as uniswap connector). */
+  public getSdkToken(tokenInfo: TokenInfo): Token {
+    return new Token(this.chainId, tokenInfo.address, tokenInfo.decimals, tokenInfo.symbol, tokenInfo.name);
   }
 
   /** First registered wallet (gateway-managed) — used when a route is called

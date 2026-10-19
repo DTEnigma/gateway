@@ -6,6 +6,7 @@
 import { Contract } from '@ethersproject/contracts';
 import { Position as UniV3Position } from '@uniswap/v3-sdk';
 import { FastifyInstance } from 'fastify';
+import JSBI from 'jsbi';
 
 import { Ethereum } from '../../../chains/ethereum/ethereum';
 import { TransactionStatus } from '../../../schemas/chain-schema';
@@ -21,7 +22,7 @@ import { locatePosition } from './addLiquidity';
 const CLMM_REMOVE_LIQUIDITY_GAS_LIMIT = 400000;
 
 export async function removeLiquidity(
-  fastify: FastifyInstance,
+  _fastify: FastifyInstance,
   network: string,
   positionAddress: string,
   liquidity: string, // uint128 raw
@@ -41,10 +42,10 @@ export async function removeLiquidity(
   if (!wallet) throw httpErrors.badRequest('Wallet not found');
 
   const sdkPool = toV3SdkPool({
-    token0,
-    token1,
-    sqrtPriceX96: poolState.sqrtPriceX96,
-    liquidity: poolState.liquidity,
+    token0: aerodrome.getSdkToken(token0),
+    token1: aerodrome.getSdkToken(token1),
+    sqrtPriceX96: JSBI.BigInt(poolState.sqrtPriceX96),
+    liquidity: JSBI.BigInt(poolState.liquidity),
     tickCurrent: poolState.tick,
     tickSpacing: Number(details.tickSpacing),
   });
@@ -82,8 +83,8 @@ export async function removeLiquidity(
     status: TransactionStatus.CONFIRMED,
     data: {
       fee: outcome.fee,
-      baseTokenAmountRemoved: formatTokenAmount(position.amount0.quotient.toString(), token0.decimals),
-      quoteTokenAmountRemoved: formatTokenAmount(position.amount1.quotient.toString(), token1.decimals),
+      baseTokenAmountRemoved: Number(formatTokenAmount(position.amount0.quotient.toString(), token0.decimals)),
+      quoteTokenAmountRemoved: Number(formatTokenAmount(position.amount1.quotient.toString(), token1.decimals)),
     },
   };
 }
@@ -92,7 +93,7 @@ function slipstreamNpm(generation: string): string {
   return getGeneration(generation).nonfungiblePositionManager;
 }
 
-async function requireWallet(ethereum: Ethereum): Promise<string> {
+async function requireWallet(_ethereum: Ethereum): Promise<string> {
   const addr = await Ethereum.getFirstWalletAddress();
   if (!addr) throw httpErrors.badRequest('No default wallet found');
   return addr;

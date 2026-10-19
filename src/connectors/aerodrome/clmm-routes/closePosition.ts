@@ -5,6 +5,7 @@
  */
 import { Contract } from '@ethersproject/contracts';
 import { Position as UniV3Position } from '@uniswap/v3-sdk';
+import JSBI from 'jsbi';
 
 import { Ethereum } from '../../../chains/ethereum/ethereum';
 import { TransactionStatus } from '../../../schemas/chain-schema';
@@ -47,10 +48,10 @@ export async function closePosition(
   if (liquidity !== '0') {
     // Compute min amounts at current price for the full remaining liquidity
     const sdkPool = toV3SdkPool({
-      token0,
-      token1,
-      sqrtPriceX96: poolState.sqrtPriceX96,
-      liquidity: poolState.liquidity,
+      token0: aerodrome.getSdkToken(token0),
+      token1: aerodrome.getSdkToken(token1),
+      sqrtPriceX96: JSBI.BigInt(poolState.sqrtPriceX96),
+      liquidity: JSBI.BigInt(poolState.liquidity),
       tickCurrent: poolState.tick,
       tickSpacing: Number(details.tickSpacing),
     });
@@ -93,6 +94,8 @@ export async function closePosition(
   if (!outcome2.confirmed) {
     return { signature: outcome2.signature, status: TransactionStatus.PENDING };
   }
+  const baseFeeCollected = Number(formatTokenAmount(details.tokensOwed0.toString(), token0.decimals));
+  const quoteFeeCollected = Number(formatTokenAmount(details.tokensOwed1.toString(), token1.decimals));
 
   // Burn the NFT (requires zero liquidity + collected tokens)
   logger.info(`Slipstream close: burn tokenId=${positionAddress}`);
@@ -108,13 +111,16 @@ export async function closePosition(
     status: TransactionStatus.CONFIRMED,
     data: {
       fee: outcome3.fee,
-      baseTokenAmountRemoved,
-      quoteTokenAmountRemoved,
+      baseTokenAmountRemoved: Number(baseTokenAmountRemoved),
+      quoteTokenAmountRemoved: Number(quoteTokenAmountRemoved),
+      baseFeeAmountCollected: baseFeeCollected,
+      quoteFeeAmountCollected: quoteFeeCollected,
+      positionRentRefunded: 0, // no rent on EVM
     },
   };
 }
 
-async function requireWallet(ethereum: Ethereum): Promise<string> {
+async function requireWallet(_ethereum: Ethereum): Promise<string> {
   const addr = await Ethereum.getFirstWalletAddress();
   if (!addr) throw httpErrors.badRequest('No default wallet found');
   return addr;
