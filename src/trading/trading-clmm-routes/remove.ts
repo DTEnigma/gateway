@@ -5,6 +5,7 @@ import { removeLiquidity as meteoraRemoveLiquidity } from '../../connectors/mete
 import { removeLiquidity as orcaRemoveLiquidity } from '../../connectors/orca/clmm-routes/removeLiquidity';
 import { removeLiquidity as pancakeswapRemoveLiquidity } from '../../connectors/pancakeswap/clmm-routes/removeLiquidity';
 import { removeLiquidity as pancakeswapSolRemoveLiquidity } from '../../connectors/pancakeswap-sol/clmm-routes/removeLiquidity';
+import { removeLiquidity as aerodromeRemoveLiquidity } from '../../connectors/aerodrome/clmm-routes/removeLiquidity';
 import { removeLiquidity as raydiumRemoveLiquidity } from '../../connectors/raydium/clmm-routes/removeLiquidity';
 import { removeLiquidity as uniswapRemoveLiquidity } from '../../connectors/uniswap/clmm-routes/removeLiquidity';
 import { RemoveLiquidityResponseType, RemoveLiquidityResponse } from '../../schemas/clmm-schema';
@@ -85,6 +86,15 @@ export const removeLiquidityRoute: FastifyPluginAsync = async (fastify) => {
         // Route to appropriate connector
         const result = await (async () => {
           switch (connector) {
+            case 'aerodrome':
+              return await aerodromeRemoveLiquidity(
+                network,
+                walletAddress,
+                positionAddress,
+                percentageToRemove,
+                slippagePct,
+              );
+
             case 'uniswap':
               return await uniswapRemoveLiquidity(
                 network,

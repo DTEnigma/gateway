@@ -206,4 +206,65 @@ export const poolFactoryABI = [
     stateMutability: 'view',
     type: 'function',
   },
+  // createPool(address,address,int24) — Slipstream factory takes tickSpacing (not fee)
+  {
+    inputs: [
+      { name: 'tokenA', type: 'address' },
+      { name: 'tokenB', type: 'address' },
+      { name: 'tickSpacing', type: 'int24' },
+    ],
+    name: 'createPool',
+    outputs: [{ name: 'pool', type: 'address' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+] as const;
+
+// ISwapRouter — verified vs aerodrome-finance/slipstream ISwapRouter.sol:
+// flat structs, tickSpacing replaces UNIv3 fee, sqrtPriceLimitX96 last.
+export const swapRouterABI = [
+  {
+    inputs: [
+      {
+        components: [
+          { name: 'tokenIn', type: 'address' },
+          { name: 'tokenOut', type: 'address' },
+          { name: 'tickSpacing', type: 'int24' },
+          { name: 'recipient', type: 'address' },
+          { name: 'deadline', type: 'uint256' },
+          { name: 'amountIn', type: 'uint256' },
+          { name: 'amountOutMinimum', type: 'uint256' },
+          { name: 'sqrtPriceLimitX96', type: 'uint160' },
+        ],
+        name: 'params',
+        type: 'tuple',
+      },
+    ],
+    name: 'exactInputSingle',
+    outputs: [{ name: 'amountOut', type: 'uint256' }],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        components: [
+          { name: 'tokenIn', type: 'address' },
+          { name: 'tokenOut', type: 'address' },
+          { name: 'tickSpacing', type: 'int24' },
+          { name: 'recipient', type: 'address' },
+          { name: 'deadline', type: 'uint256' },
+          { name: 'amountOut', type: 'uint256' },
+          { name: 'amountInMaximum', type: 'uint256' },
+          { name: 'sqrtPriceLimitX96', type: 'uint160' },
+        ],
+        name: 'params',
+        type: 'tuple',
+      },
+    ],
+    name: 'exactOutputSingle',
+    outputs: [{ name: 'amountIn', type: 'uint256' }],
+    stateMutability: 'payable',
+    type: 'function',
+  },
 ] as const;

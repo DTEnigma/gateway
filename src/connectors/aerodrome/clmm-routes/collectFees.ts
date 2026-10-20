@@ -20,6 +20,7 @@ const MAX_UINT128 = '0xffffffffffffffffffffffffffffffff';
 
 export async function collectFees(
   network: string,
+  walletAddress: string,
   positionAddress: string,
 ): Promise<CollectFeesResponseType> {
   if (!positionAddress) {
@@ -31,7 +32,6 @@ export async function collectFees(
 
   const { npmAddress, details, token0, token1 } = await locatePosition(aerodrome, ethereum, positionAddress);
 
-  const walletAddress = await requireWallet(ethereum);
   const wallet = await ethereum.getWallet(walletAddress);
   if (!wallet) throw httpErrors.badRequest('Wallet not found');
 
@@ -65,8 +65,3 @@ export async function collectFees(
   };
 }
 
-async function requireWallet(_ethereum: Ethereum): Promise<string> {
-  const addr = await Ethereum.getFirstWalletAddress();
-  if (!addr) throw httpErrors.badRequest('No default wallet found');
-  return addr;
-}

@@ -22,13 +22,14 @@ import { locatePosition } from './addLiquidity';
 const CLMM_REMOVE_LIQUIDITY_GAS_LIMIT = 400000;
 
 export async function removeLiquidity(
-  _fastify: FastifyInstance,
   network: string,
+  walletAddress: string,
   positionAddress: string,
-  liquidity: string, // uint128 raw
+  percentageToRemove: number,
+  _slippagePct: number = 0.5,
 ): Promise<RemoveLiquidityResponseType> {
-  if (!positionAddress || !liquidity) {
-    throw httpErrors.badRequest('Position token ID and liquidity are required');
+  if (!positionAddress || !(percentageToRemove > 0 && percentageToRemove <= 100)) {
+    throw httpErrors.badRequest('Position token ID and percentageToRemove in (0, 100] required');
   }
 
   const aerodrome = await Aerodrome.getInstance(network);
@@ -38,8 +39,12 @@ export async function removeLiquidity(
     aerodrome, ethereum, positionAddress,
   );
 
-  const wallet = await ethereum.getWallet(await requireWallet(ethereum));
+  const wallet = await ethereum.getWallet(walletAddress);
   if (!wallet) throw httpErrors.badRequest('Wallet not found');
+
+  // percentage -> raw liquidity
+  const totalLiquidity = details.liquidity.toString();
+  const liquidity = (BigInt(totalLiquidity) * BigInt(Math.floor(percentageToRemove * 100)) / 10000n).toString();
 
   const sdkPool = toV3SdkPool({
     token0: aerodrome.getSdkToken(token0),
@@ -91,10 +96,4 @@ export async function removeLiquidity(
 
 function slipstreamNpm(generation: string): string {
   return getGeneration(generation).nonfungiblePositionManager;
-}
-
-async function requireWallet(_ethereum: Ethereum): Promise<string> {
-  const addr = await Ethereum.getFirstWalletAddress();
-  if (!addr) throw httpErrors.badRequest('No default wallet found');
-  return addr;
 }

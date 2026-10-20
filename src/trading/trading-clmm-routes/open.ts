@@ -5,6 +5,7 @@ import { openPosition as meteoraOpenPosition } from '../../connectors/meteora/cl
 import { openPosition as orcaOpenPosition } from '../../connectors/orca/clmm-routes/openPosition';
 import { openPosition as pancakeswapOpenPosition } from '../../connectors/pancakeswap/clmm-routes/openPosition';
 import { openPosition as pancakeswapSolOpenPosition } from '../../connectors/pancakeswap-sol/clmm-routes/openPosition';
+import { openPosition as aerodromeOpenPosition } from '../../connectors/aerodrome/clmm-routes/openPosition';
 import { openPosition as raydiumOpenPosition } from '../../connectors/raydium/clmm-routes/openPosition';
 import { openPosition as uniswapOpenPosition } from '../../connectors/uniswap/clmm-routes/openPosition';
 import { OpenPositionResponseType, OpenPositionResponse } from '../../schemas/clmm-schema';
@@ -122,6 +123,18 @@ export const openPositionRoute: FastifyPluginAsync = async (fastify) => {
         // Route to appropriate connector
         const result = await (async () => {
           switch (connector) {
+            case 'aerodrome':
+              return await aerodromeOpenPosition(
+                network,
+                walletAddress,
+                lowerPrice,
+                upperPrice,
+                poolAddress,
+                baseTokenAmount,
+                quoteTokenAmount,
+                slippagePct,
+              );
+
             case 'uniswap':
               return await uniswapOpenPosition(
                 network,

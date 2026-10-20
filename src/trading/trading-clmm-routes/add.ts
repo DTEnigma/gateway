@@ -5,6 +5,7 @@ import { addLiquidity as meteoraAddLiquidity } from '../../connectors/meteora/cl
 import { addLiquidity as orcaAddLiquidity } from '../../connectors/orca/clmm-routes/addLiquidity';
 import { addLiquidity as pancakeswapAddLiquidity } from '../../connectors/pancakeswap/clmm-routes/addLiquidity';
 import { addLiquidity as pancakeswapSolAddLiquidity } from '../../connectors/pancakeswap-sol/clmm-routes/addLiquidity';
+import { addLiquidity as aerodromeAddLiquidity } from '../../connectors/aerodrome/clmm-routes/addLiquidity';
 import { addLiquidity as raydiumAddLiquidity } from '../../connectors/raydium/clmm-routes/addLiquidity';
 import { addLiquidity as uniswapAddLiquidity } from '../../connectors/uniswap/clmm-routes/addLiquidity';
 import { AddLiquidityResponseType, AddLiquidityResponse } from '../../schemas/clmm-schema';
@@ -109,6 +110,16 @@ export const addLiquidityRoute: FastifyPluginAsync = async (fastify) => {
         // Route to appropriate connector
         const result = await (async () => {
           switch (connector) {
+            case 'aerodrome':
+              return await aerodromeAddLiquidity(
+                network,
+                walletAddress,
+                positionAddress,
+                baseAmount,
+                quoteAmount,
+                slippagePct,
+              );
+
             case 'uniswap':
               return await uniswapAddLiquidity(
                 network,

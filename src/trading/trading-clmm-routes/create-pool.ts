@@ -5,6 +5,7 @@ import { createPool as meteoraCreatePool } from '../../connectors/meteora/clmm-r
 import { createPool as orcaCreatePool } from '../../connectors/orca/clmm-routes/createPool';
 import { createPool as pancakeswapCreatePool } from '../../connectors/pancakeswap/clmm-routes/createPool';
 import { createPool as pancakeswapSolCreatePool } from '../../connectors/pancakeswap-sol/clmm-routes/createPool';
+import { createPool as aerodromeCreatePool } from '../../connectors/aerodrome/clmm-routes/createPool';
 import { createPool as raydiumCreatePool } from '../../connectors/raydium/clmm-routes/createPool';
 import { createPool as uniswapCreatePool } from '../../connectors/uniswap/clmm-routes/createPool';
 import {
@@ -97,8 +98,18 @@ export const createPoolRoute: FastifyPluginAsync = async (fastify) => {
             );
           case 'raydium':
             return await raydiumCreatePool(network, walletAddress, baseToken, quoteToken, initialPrice, ammConfigIndex);
-          case 'uniswap':
-            return await uniswapCreatePool(network, walletAddress, baseToken, quoteToken, initialPrice, evmFeeTier);
+            case 'aerodrome':
+              // Slipstream: tickSpacing replaces fee; map default 0.3% tier -> 60
+              return await aerodromeCreatePool(
+                network,
+                walletAddress,
+                baseToken,
+                quoteToken,
+                initialPrice,
+                evmFeeTier === 500 ? 10 : evmFeeTier === 10000 ? 200 : 60,
+              );
+            case 'uniswap':
+              return await uniswapCreatePool(network, walletAddress, baseToken, quoteToken, initialPrice, evmFeeTier);
           case 'orca':
             // Orca's fee tier IS its tick spacing — binStep is the route's one
             // granularity vocabulary.

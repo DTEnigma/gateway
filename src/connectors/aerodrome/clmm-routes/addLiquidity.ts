@@ -23,6 +23,7 @@ const CLMM_ADD_LIQUIDITY_GAS_LIMIT = 400000;
 
 export async function addLiquidity(
   network: string,
+  walletAddress: string,
   positionAddress: string,
   baseTokenAmount: number,
   quoteTokenAmount: number,
@@ -40,7 +41,7 @@ export async function addLiquidity(
     aerodrome, ethereum, positionAddress,
   );
 
-  const wallet = await ethereum.getWallet(await requireWallet(ethereum));
+  const wallet = await ethereum.getWallet(walletAddress);
   if (!wallet) {
     throw httpErrors.badRequest('Wallet not found');
   }
@@ -127,12 +128,6 @@ export async function addLiquidity(
       quoteTokenAmountAdded: Number(formatTokenAmount(nextPosition.amount1.quotient.toString(), quoteTok.decimals)),
     },
   };
-}
-
-async function requireWallet(_ethereum: Ethereum): Promise<string> {
-  const addr = await Ethereum.getFirstWalletAddress();
-  if (!addr) throw httpErrors.badRequest('No default wallet found');
-  return addr;
 }
 
 /** Locate a position across generations; returns hydrated context. */

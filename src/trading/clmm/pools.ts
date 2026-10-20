@@ -5,6 +5,7 @@ import { getPoolInfo as meteoraGetPoolInfo } from '../../connectors/meteora/clmm
 import { getPoolInfo as orcaGetPoolInfo } from '../../connectors/orca/clmm-routes/poolInfo';
 import { getPoolInfo as pancakeswapGetPoolInfo } from '../../connectors/pancakeswap/clmm-routes/poolInfo';
 import { getPoolInfo as pancakeswapSolGetPoolInfo } from '../../connectors/pancakeswap-sol/clmm-routes/poolInfo';
+import { getPoolInfo as aerodromeGetPoolInfo } from '../../connectors/aerodrome/clmm-routes/poolInfo';
 import { getPoolInfo as raydiumGetPoolInfo } from '../../connectors/raydium/clmm-routes/poolInfo';
 import { getPoolInfo as uniswapGetPoolInfo } from '../../connectors/uniswap/clmm-routes/poolInfo';
 import { PoolInfo, PoolInfoSchema } from '../../schemas/clmm-schema';
@@ -82,6 +83,8 @@ async function getEthereumPoolInfo(
   logger.info(`[CLMM] Getting pool info from ${connector} on ethereum/${network}`);
 
   switch (connector) {
+    case 'aerodrome':
+      return await aerodromeGetPoolInfo(fastify, network, poolAddress, binCount);
     case 'uniswap':
       return await uniswapGetPoolInfo(fastify, network, poolAddress, binCount);
     case 'pancakeswap':

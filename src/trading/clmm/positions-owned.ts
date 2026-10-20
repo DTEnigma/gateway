@@ -5,6 +5,7 @@ import { getPositionsOwned as meteoraGetPositionsOwned } from '../../connectors/
 import { getPositionsOwned as orcaGetPositionsOwned } from '../../connectors/orca/clmm-routes/positionsOwned';
 import { getPositionsOwned as pancakeswapGetPositionsOwned } from '../../connectors/pancakeswap/clmm-routes/positionsOwned';
 import { getPositionsOwned as pancakeswapSolGetPositionsOwned } from '../../connectors/pancakeswap-sol/clmm-routes/positionsOwned';
+import { getPositionsOwned as aerodromeGetPositionsOwned } from '../../connectors/aerodrome/clmm-routes/positionsOwned';
 import { getPositionsOwned as raydiumGetPositionsOwned } from '../../connectors/raydium/clmm-routes/positionsOwned';
 import { getPositionsOwned as uniswapGetPositionsOwned } from '../../connectors/uniswap/clmm-routes/positionsOwned';
 import { PositionInfo, PositionInfoSchema } from '../../schemas/clmm-schema';
@@ -70,6 +71,8 @@ async function getEthereumPositionsOwned(
   logger.info(`[CLMM] Getting positions owned from ${connector} on ethereum/${network}`);
 
   switch (connector) {
+    case 'aerodrome':
+      return await aerodromeGetPositionsOwned(fastify, network, walletAddress);
     case 'uniswap':
       return await uniswapGetPositionsOwned(fastify, network, walletAddress);
     case 'pancakeswap':

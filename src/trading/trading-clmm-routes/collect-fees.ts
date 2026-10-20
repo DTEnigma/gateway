@@ -5,6 +5,7 @@ import { collectFees as meteoraCollectFees } from '../../connectors/meteora/clmm
 import { collectFees as orcaCollectFees } from '../../connectors/orca/clmm-routes/collectFees';
 import { collectFees as pancakeswapCollectFees } from '../../connectors/pancakeswap/clmm-routes/collectFees';
 import { collectFees as pancakeswapSolCollectFees } from '../../connectors/pancakeswap-sol/clmm-routes/collectFees';
+import { collectFees as aerodromeCollectFees } from '../../connectors/aerodrome/clmm-routes/collectFees';
 import { collectFees as raydiumCollectFees } from '../../connectors/raydium/clmm-routes/collectFees';
 import { collectFees as uniswapCollectFees } from '../../connectors/uniswap/clmm-routes/collectFees';
 import { CollectFeesResponseType, CollectFeesResponse } from '../../schemas/clmm-schema';
@@ -63,6 +64,8 @@ export const collectFeesRoute: FastifyPluginAsync = async (fastify) => {
         // Route to appropriate connector
         const result = await (async () => {
           switch (connector) {
+            case 'aerodrome':
+              return await aerodromeCollectFees(network, walletAddress, positionAddress);
             case 'uniswap':
               return await uniswapCollectFees(network, walletAddress, positionAddress);
 

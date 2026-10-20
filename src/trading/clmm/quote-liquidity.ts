@@ -5,6 +5,7 @@ import { quotePosition as meteoraQuotePosition } from '../../connectors/meteora/
 import { quotePosition as orcaQuotePosition } from '../../connectors/orca/clmm-routes/quotePosition';
 import { quotePosition as pancakeswapQuotePosition } from '../../connectors/pancakeswap/clmm-routes/quotePosition';
 import { quotePosition as pancakeswapSolQuotePosition } from '../../connectors/pancakeswap-sol/clmm-routes/quotePosition';
+import { quotePosition as aerodromeQuotePosition } from '../../connectors/aerodrome/clmm-routes/quotePosition';
 import { quotePosition as raydiumQuotePosition } from '../../connectors/raydium/clmm-routes/quotePosition';
 import { quotePosition as uniswapQuotePosition } from '../../connectors/uniswap/clmm-routes/quotePosition';
 import { QuotePositionResponseType, QuotePositionResponse } from '../../schemas/clmm-schema';
@@ -145,6 +146,16 @@ async function getEthereumQuotePosition(
   logger.info(`[CLMM] Quoting position from ${connector} on ethereum/${network}`);
 
   switch (connector) {
+    case 'aerodrome':
+      return await aerodromeQuotePosition(
+        network,
+        poolAddress,
+        baseTokenAmount,
+        quoteTokenAmount,
+        lowerPrice,
+        upperPrice,
+        slippagePct,
+      );
     case 'uniswap':
       return await uniswapQuotePosition(
         network,

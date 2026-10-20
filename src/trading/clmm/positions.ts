@@ -5,6 +5,7 @@ import { getPositionInfo as meteoraGetPositionInfo } from '../../connectors/mete
 import { getPositionInfo as orcaGetPositionInfo } from '../../connectors/orca/clmm-routes/positionInfo';
 import { getPositionInfo as pancakeswapGetPositionInfo } from '../../connectors/pancakeswap/clmm-routes/positionInfo';
 import { getPositionInfo as pancakeswapSolGetPositionInfo } from '../../connectors/pancakeswap-sol/clmm-routes/positionInfo';
+import { getPositionInfo as aerodromeGetPositionInfo } from '../../connectors/aerodrome/clmm-routes/positionInfo';
 import { getPositionInfo as raydiumGetPositionInfo } from '../../connectors/raydium/clmm-routes/positionInfo';
 import { getPositionInfo as uniswapGetPositionInfo } from '../../connectors/uniswap/clmm-routes/positionInfo';
 import { PositionInfo, PositionInfoSchema } from '../../schemas/clmm-schema';
@@ -65,6 +66,8 @@ async function getEthereumPositionInfo(
   logger.info(`[CLMM] Getting position info from ${connector} on ethereum/${network}`);
 
   switch (connector) {
+    case 'aerodrome':
+      return await aerodromeGetPositionInfo(fastify, network, positionAddress);
     case 'uniswap':
       return await uniswapGetPositionInfo(fastify, network, positionAddress);
     case 'pancakeswap':

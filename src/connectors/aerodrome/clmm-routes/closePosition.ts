@@ -22,6 +22,7 @@ const MAX_UINT128 = '0xffffffffffffffffffffffffffffffff';
 
 export async function closePosition(
   network: string,
+  walletAddress: string,
   positionAddress: string,
 ): Promise<ClosePositionResponseType> {
   if (!positionAddress) {
@@ -35,7 +36,6 @@ export async function closePosition(
     aerodrome, ethereum, positionAddress,
   );
 
-  const walletAddress = await requireWallet(ethereum);
   const wallet = await ethereum.getWallet(walletAddress);
   if (!wallet) throw httpErrors.badRequest('Wallet not found');
 
@@ -120,8 +120,3 @@ export async function closePosition(
   };
 }
 
-async function requireWallet(_ethereum: Ethereum): Promise<string> {
-  const addr = await Ethereum.getFirstWalletAddress();
-  if (!addr) throw httpErrors.badRequest('No default wallet found');
-  return addr;
-}

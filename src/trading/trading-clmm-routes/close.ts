@@ -5,6 +5,7 @@ import { closePosition as meteoraClosePosition } from '../../connectors/meteora/
 import { closePosition as orcaClosePosition } from '../../connectors/orca/clmm-routes/closePosition';
 import { closePosition as pancakeswapClosePosition } from '../../connectors/pancakeswap/clmm-routes/closePosition';
 import { closePosition as pancakeswapSolClosePosition } from '../../connectors/pancakeswap-sol/clmm-routes/closePosition';
+import { closePosition as aerodromeClosePosition } from '../../connectors/aerodrome/clmm-routes/closePosition';
 import { closePosition as raydiumClosePosition } from '../../connectors/raydium/clmm-routes/closePosition';
 import { closePosition as uniswapClosePosition } from '../../connectors/uniswap/clmm-routes/closePosition';
 import { ClosePositionResponseType, ClosePositionResponse } from '../../schemas/clmm-schema';
@@ -70,6 +71,8 @@ export const closePositionRoute: FastifyPluginAsync = async (fastify) => {
         // Route to appropriate connector
         const result = await (async () => {
           switch (connector) {
+            case 'aerodrome':
+              return await aerodromeClosePosition(network, walletAddress, positionAddress);
             case 'uniswap':
               return await uniswapClosePosition(network, walletAddress, positionAddress, slippagePct);
 

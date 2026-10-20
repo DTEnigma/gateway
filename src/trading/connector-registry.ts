@@ -14,6 +14,9 @@
  * are absorbed here instead of leaking into the routes.
  */
 
+// Aerodrome (Slipstream CLMM on Base)
+import { executeSwap as aerodromeClmmExecuteSwap } from '../connectors/aerodrome/clmm-routes/executeSwap';
+import { quoteSwap as aerodromeClmmQuoteSwap } from '../connectors/aerodrome/clmm-routes/quoteSwap';
 // Router connectors
 import { executeQuote as zeroXExecuteQuote } from '../connectors/0x/router-routes/executeQuote';
 import { executeSwap as zeroXExecuteSwap } from '../connectors/0x/router-routes/executeSwap';
@@ -322,6 +325,12 @@ const CLMM_REGISTRY: Record<string, PoolOps> = {
     quoteSwap: (a) => uniswapClmmQuoteSwap(a.network, a.poolAddress, a.baseToken, a.side, a.amount, a.slippagePct),
     executeSwap: (a) =>
       uniswapClmmExecuteSwap(a.network, a.walletAddress, a.poolAddress, a.baseToken, a.side, a.amount, a.slippagePct),
+  },
+  aerodrome: {
+    chain: 'ethereum',
+    quoteSwap: (a) => aerodromeClmmQuoteSwap(a.network, a.poolAddress, a.baseToken, a.side, a.amount, a.slippagePct),
+    executeSwap: (a) =>
+      aerodromeClmmExecuteSwap(a.network, a.walletAddress, a.poolAddress, a.baseToken, a.side, a.amount, a.slippagePct),
   },
   pancakeswap: {
     chain: 'ethereum',
