@@ -18,7 +18,7 @@ import { sanitizeErrorMessage } from '../../../services/sanitize';
 import { Aerodrome } from '../aerodrome';
 import { poolABI } from '../aerodrome.abis';
 import { AerodromeConfig } from '../aerodrome.config';
-import { formatTokenAmount, toV3SdkPool } from '../aerodrome.utils';
+import { formatTokenAmount, readPoolState, toV3SdkPool } from '../aerodrome.utils';
 
 export async function quoteSwap(
   network: string,
@@ -36,11 +36,10 @@ export async function quoteSwap(
   const pool = new Contract(poolAddress, poolABI as any, ethereum.provider);
   let immutables: any, slot0: any, liquidity: any;
   try {
-    [immutables, slot0, liquidity] = await Promise.all([
-      pool.immutables(),
-      pool.slot0(),
-      pool.liquidity(),
-    ]);
+    const state = await readPoolState(pool);
+    immutables = { token0: state.token0, token1: state.token1, tickSpacing: state.tickSpacing };
+    slot0 = { sqrtPriceX96: state.sqrtPriceX96, tick: state.tick };
+    liquidity = state.liquidity;
   } catch {
     throw httpErrors.notFound(sanitizeErrorMessage('Pool not found: {}', poolAddress));
   }
@@ -125,7 +124,7 @@ export async function resolveCounterToken(
 ): Promise<string> {
   const ethereum = await Ethereum.getInstance(network);
   const pool = new Contract(poolAddress, poolABI as any, ethereum.provider);
-  const immutables = await pool.immutables();
-  const isBaseToken0 = baseToken.toLowerCase() === immutables.token0.toLowerCase();
-  return isBaseToken0 ? immutables.token1 : immutables.token0;
+  const state = await readPoolState(pool);
+  const isBaseToken0 = baseToken.toLowerCase() === state.token0.toLowerCase();
+  return isBaseToken0 ? state.token1 : state.token0;
 }

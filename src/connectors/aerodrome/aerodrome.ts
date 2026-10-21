@@ -154,17 +154,20 @@ export class Aerodrome {
       if (!poolAddress || /^0x0+$/.test(poolAddress)) continue;
 
       const pool = new Contract(poolAddress, poolABI as any, this.ethereum.provider);
-      const [immutables, slot0, liquidity] = await Promise.all([
-        pool.immutables(),
+      // Real CLPool surface (fork-verified): separate getters, no immutables().
+      const [token0Addr, token1Addr, spacing, slot0, liquidity] = await Promise.all([
+        pool.token0(),
+        pool.token1(),
+        pool.tickSpacing(),
         pool.slot0(),
         pool.liquidity(),
       ]);
 
       return {
         address: poolAddress,
-        token0: immutables.token0,
-        token1: immutables.token1,
-        tickSpacing: Number(immutables.tickSpacing),
+        token0: token0Addr,
+        token1: token1Addr,
+        tickSpacing: Number(spacing),
         sqrtPriceX96: slot0.sqrtPriceX96.toString(),
         tick: Number(slot0.tick),
         liquidity: liquidity.toString(),

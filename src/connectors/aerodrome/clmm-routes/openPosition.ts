@@ -31,6 +31,7 @@ import {
   formatTokenAmount,
   nearestUsableTick,
   priceToTick,
+  readPoolState,
 } from '../aerodrome.utils';
 
 const CLMM_OPEN_POSITION_GAS_LIMIT = 600000;
@@ -63,15 +64,14 @@ export async function openPosition(
   const ethereum = await Ethereum.getInstance(network);
   const gen = getGeneration(generation);
 
-  // Pool state via the connector (immutables + slot0 + liquidity)
+  // Pool state via the connector (real CLPool getters — see readPoolState)
   const poolContract = new Contract(poolAddress, poolReaderABI, ethereum.provider);
   let immutables: any, slot0: any, poolLiquidity: any;
   try {
-    [immutables, slot0, poolLiquidity] = await Promise.all([
-      poolContract.immutables(),
-      poolContract.slot0(),
-      poolContract.liquidity(),
-    ]);
+    const state = await readPoolState(poolContract);
+    immutables = { token0: state.token0, token1: state.token1, tickSpacing: state.tickSpacing };
+    slot0 = { sqrtPriceX96: state.sqrtPriceX96, tick: state.tick };
+    poolLiquidity = state.liquidity;
   } catch {
     throw httpErrors.notFound(sanitizeErrorMessage('Pool not found: {}', poolAddress));
   }
@@ -249,14 +249,25 @@ async function checkAllowance(
 }
 
 const poolReaderABI = [
+  // Real CLPool surface (fork-verified): separate getters, no immutables().
   {
     inputs: [],
-    name: 'immutables',
-    outputs: [
-      { internalType: 'address', name: 'token0', type: 'address' },
-      { internalType: 'address', name: 'token1', type: 'address' },
-      { internalType: 'int24', name: 'tickSpacing', type: 'int24' },
-    ],
+    name: 'token0',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'token1',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'tickSpacing',
+    outputs: [{ internalType: 'int24', name: '', type: 'int24' }],
     stateMutability: 'view',
     type: 'function',
   },

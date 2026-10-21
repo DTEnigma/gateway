@@ -33,7 +33,7 @@ const TEST_CONFIG = {
   // WETH/USDC Slipstream pool — resolved live from the gauges-v3 factory
   // (falls back to SLIPSTREAM_POOL env if set)
   poolAddress: process.env.SLIPSTREAM_POOL || '',
-  tickSpacing: Number(process.env.SLIPSTREAM_TICK_SPACING || 200), // 1% tier WETH/USDC
+  tickSpacing: Number(process.env.SLIPSTREAM_TICK_SPACING || 10), // fork-verified tier for gauges-v3 WETH/USDC
   // Wide range around WETH/USDC to stay in-range through the test
   lowerPrice: 1500,
   upperPrice: 4500,
@@ -56,6 +56,16 @@ describeTest('Aerodrome Slipstream CLMM Position Lifecycle — ANVIL FORK', () =
     const wallet = new ethers.Wallet(ANVIL_PK, provider);
     walletAddress = wallet.address;
 
+    // Fork-only: bypass gateway's encrypted wallet store — routes receive the
+    // deterministic anvil signer directly. What the fork validates is route
+    // logic (params, calldata, event decoding); keystore handling is gateway's
+    // own tested machinery and stays out of scope here.
+    const { Ethereum } = await import('../../src/chains/ethereum/ethereum');
+    const ethInstance = await Ethereum.getInstance(TEST_CONFIG.network);
+    const forkWallet = new ethers.Wallet(ANVIL_PK, ethInstance.provider);
+    jest.spyOn(ethInstance, 'getWallet').mockResolvedValue(forkWallet as any);
+    jest.spyOn(ethInstance, 'ready').mockReturnValue(true);
+
     // Resolve the WETH/USDC Slipstream pool from the latest factory
     const WETH = '0x4200000000000000000000000000000000000006';
     const USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
@@ -66,7 +76,8 @@ describeTest('Aerodrome Slipstream CLMM Position Lifecycle — ANVIL FORK', () =
         ['function getPool(address,address,int24) view returns (address)'],
         provider,
       );
-      // token0/token1 order is sorted by address; getPool is order-insensitive
+      // token0/token1 order is sorted by address; getPool is order-insensitive.
+      // Fork-verified 2026-10-21: gauges-v3 WETH/USDC exists at spacing 10.
       TEST_CONFIG.poolAddress = await factory.getPool(WETH, USDC, TEST_CONFIG.tickSpacing);
       console.log(`Resolved Slipstream WETH/USDC (spacing ${TEST_CONFIG.tickSpacing}): ${TEST_CONFIG.poolAddress}`);
     }

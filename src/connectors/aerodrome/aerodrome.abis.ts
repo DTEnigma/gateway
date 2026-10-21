@@ -181,14 +181,25 @@ export const poolABI = [
     stateMutability: 'view',
     type: 'function',
   },
+  // Verified on real CLPool (fork): separate getters, NOT an immutables() tuple.
   {
     inputs: [],
-    name: 'immutables',
-    outputs: [
-      { name: 'token0', type: 'address' },
-      { name: 'token1', type: 'address' },
-      { name: 'tickSpacing', type: 'int24' },
-    ],
+    name: 'token0',
+    outputs: [{ name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'token1',
+    outputs: [{ name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'tickSpacing',
+    outputs: [{ name: '', type: 'int24' }],
     stateMutability: 'view',
     type: 'function',
   },

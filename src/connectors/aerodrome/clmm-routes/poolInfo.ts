@@ -12,7 +12,7 @@ import { PoolInfo } from '../../../schemas/clmm-schema';
 import { sanitizeErrorMessage } from '../../../services/sanitize';
 import { Aerodrome } from '../aerodrome';
 import { poolABI } from '../aerodrome.abis';
-import { formatTokenAmount, tickToPrice } from '../aerodrome.utils';
+import { formatTokenAmount, readPoolState, tickToPrice } from '../aerodrome.utils';
 
 export async function getPoolInfo(
   fastify: FastifyInstance,
@@ -29,18 +29,14 @@ export async function getPoolInfo(
 
   const pool = new EthersProjectContract(poolAddress, poolABI as any, ethereum.provider);
 
-  let immutables: { token0: string; token1: string; tickSpacing: number };
-  let slot0: { sqrtPriceX96: any; tick: number };
-  let liquidity: any;
+  let state: Awaited<ReturnType<typeof readPoolState>>;
   try {
-    [immutables, slot0, liquidity] = await Promise.all([
-      pool.immutables(),
-      pool.slot0(),
-      pool.liquidity(),
-    ]);
+    state = await readPoolState(pool);
   } catch {
     throw fastify.httpErrors.notFound(sanitizeErrorMessage('Pool not found: {}', poolAddress));
   }
+  const immutables = { token0: state.token0, token1: state.token1, tickSpacing: state.tickSpacing };
+  const slot0 = { sqrtPriceX96: state.sqrtPriceX96, tick: state.tick };
 
   const token0 = await aerodrome.getToken(immutables.token0);
   const token1 = await aerodrome.getToken(immutables.token1);

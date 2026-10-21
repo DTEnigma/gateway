@@ -20,6 +20,7 @@ import {
   formatTokenAmount,
   nearestUsableTick,
   priceToTick,
+  readPoolState,
   tickToPrice,
 } from '../aerodrome.utils';
 
@@ -38,11 +39,10 @@ export async function quotePosition(
   const pool = new Contract(poolAddress, poolABI as any, ethereum.provider);
   let immutables: any, slot0: any, liquidity: any;
   try {
-    [immutables, slot0, liquidity] = await Promise.all([
-      pool.immutables(),
-      pool.slot0(),
-      pool.liquidity(),
-    ]);
+    const state = await readPoolState(pool);
+    immutables = { token0: state.token0, token1: state.token1, tickSpacing: state.tickSpacing };
+    slot0 = { sqrtPriceX96: state.sqrtPriceX96, tick: state.tick };
+    liquidity = state.liquidity;
   } catch {
     throw httpErrors.notFound(sanitizeErrorMessage('Pool not found: {}', poolAddress));
   }

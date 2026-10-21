@@ -18,7 +18,7 @@ import { Aerodrome } from '../aerodrome';
 import { poolABI, swapRouterABI } from '../aerodrome.abis';
 import { AerodromeConfig } from '../aerodrome.config';
 import { getGeneration } from '../aerodrome.constants';
-import { formatTokenAmount } from '../aerodrome.utils';
+import { formatTokenAmount, readPoolState } from '../aerodrome.utils';
 import { quoteSwap } from './quoteSwap';
 
 const CLMM_SWAP_GAS_LIMIT = 350000;
@@ -46,7 +46,8 @@ export async function executeSwap(
   const pool = new Contract(poolAddress, poolABI as any, ethereum.provider);
   let immutables: any;
   try {
-    immutables = await pool.immutables();
+    const state = await readPoolState(pool);
+    immutables = { token0: state.token0, token1: state.token1, tickSpacing: state.tickSpacing };
   } catch {
     throw httpErrors.notFound(sanitizeErrorMessage('Pool not found: {}', poolAddress));
   }

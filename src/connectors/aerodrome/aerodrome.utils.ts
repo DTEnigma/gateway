@@ -169,6 +169,36 @@ export function nearestFeeAmountForSpacing(tickSpacing: number): FeeAmount {
   }
 }
 
+/** Read pool identity + state via the REAL CLPool surface (fork-verified):
+ * separate token0()/token1()/tickSpacing() getters — there is no
+ * immutables() tuple on Slipstream CLPools. `pool` is an ethers Contract. */
+export async function readPoolState(
+  pool: any,
+): Promise<{
+  token0: string;
+  token1: string;
+  tickSpacing: number;
+  sqrtPriceX96: any;
+  tick: number;
+  liquidity: any;
+}> {
+  const [token0, token1, spacing, slot0, liquidity] = await Promise.all([
+    pool.token0(),
+    pool.token1(),
+    pool.tickSpacing(),
+    pool.slot0(),
+    pool.liquidity(),
+  ]);
+  return {
+    token0,
+    token1,
+    tickSpacing: Number(spacing),
+    sqrtPriceX96: slot0.sqrtPriceX96,
+    tick: Number(slot0.tick),
+    liquidity,
+  };
+}
+
 /** Format raw onchain amount to human number (display/logging only). */
 export function formatTokenAmount(raw: JSBI | string, decimals: number): string {
   const s = raw.toString();
